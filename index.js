@@ -3,7 +3,6 @@
 var RateLimitMiddleware = (function() {
 
   function RateLimitMiddleware(options) {
-    this._test = test;
     this._hits = {}
     this._options = {
       timeWindow: 60 * 1000,

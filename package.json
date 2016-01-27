@@ -1,6 +1,6 @@
 {
   "name": "@intabulas/nodal-middleware-ratelimit",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A simplicitc rate limiting middleware for Nodal",
   "main": "index.js",
   "scripts": {
