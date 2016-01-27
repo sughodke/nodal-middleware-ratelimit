@@ -9,6 +9,7 @@ var RateLimitMiddleware = (function() {
       max: 20,
       message: 'Too many requests, please try again later.',
       statusCode: 429,
+      includeHeaders: true,
       exclude: [
         // '::1'
       ]
@@ -56,7 +57,12 @@ var RateLimitMiddleware = (function() {
       controller.tooManyRequests(this._options.message, { host: ip, maximum: this._options.max,  requests: this._hits[ip]})
     }
 
-    console.log(ip + ' has ' + this._hits[ip] + ' ' + reqLeft + " left")
+    if ( this._options.includeHeaders ) {
+      controller.setHeader('X-RateLimit-Limit', this._options.max);
+      controller.setHeader('X-RateLimit-Remaining', reqLeft);
+      controller.setHeader('X-Rate-Limit-Reset', this._reset);
+    }
+
     callback(null)
 
   }
