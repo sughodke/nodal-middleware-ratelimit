@@ -1,6 +1,6 @@
 {
   "name": "nodal-middleware-ratelimit",
-  "version": "0.2.1",
+  "version": "0.3.0-rc1",
   "description": "A simplicitc rate limiting middleware for Nodal",
   "main": "index.js",
   "scripts": {},
