@@ -40,7 +40,7 @@ var RateLimitMiddleware = (function() {
     let ip = controller.request().headers['x-forwarded-for'] || controller.request().connection.remoteAddress;
 
     // has it been more than this._options.timeWindow?
-    if ( this._resetWindow < new Date()) {
+    if ( this._reset < new Date()) {
       this._resetLimiter();
     }
 
@@ -54,7 +54,12 @@ var RateLimitMiddleware = (function() {
 
     let reqLeft = Math.max(0, this._options.max - this._hits[ip]);
     if (this._options.max && this._hits[ip] > this._options.max) {
-      controller.tooManyRequests(this._options.message, { host: ip, maximum: this._options.max,  requests: this._hits[ip]})
+      controller.tooManyRequests(this._options.message, {
+        host: ip,
+        maximum: this._options.max,
+        requests: this._hits[ip],
+        resets: this._reset
+      });
     }
 
     if ( this._options.includeHeaders ) {
