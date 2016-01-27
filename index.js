@@ -62,6 +62,8 @@ var RateLimitMiddleware = (function() {
 
   }
 
+  return RateLimitMiddleware;
+
 })();
 
 module.exports = RateLimitMiddleware;
