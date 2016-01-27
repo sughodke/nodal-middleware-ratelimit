@@ -6,7 +6,7 @@ var RateLimitMiddleware = (function() {
     this._hits = {}
     this._options = {
       timeWindow: 60 * 1000,
-      max: 20,
+      max: 100,
       message: 'Too many requests, please try again later.',
       statusCode: 429,
       includeHeaders: true,
