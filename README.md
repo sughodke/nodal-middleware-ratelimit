@@ -16,7 +16,7 @@ $ npm install --save nodal-middleware-ratelimit
 In your `app/app.js` you first need to require the module
 
 ```javascript
-const RateLimitMiddleware = require('@intabulas/nodal-middleware-ratelimit');
+const RateLimitMiddleware = require('nodal-middleware-ratelimit');
 ```
 
 Then simply use it
