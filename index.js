@@ -41,7 +41,7 @@ var RateLimitMiddleware = (function() {
 
     // has it been more than this._options.timeWindow?
     if ( this._resetWindow < new Date()) {
-      this._resetWindow();
+      this._resetLimiter();
     }
 
     if ( this._options.exclude.indexOf(ip) !== -1) {
