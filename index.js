@@ -14,7 +14,7 @@ module.exports = (function() {
     });
 
     str = str.replace(/\/:(\w+?)$/, (m, name) => {
-      return '(?:/([^\/]+?))?'
+      return '(?:/([^\/]+?))?';
     });
 
     str = str.replace(/\/\(\.\*\?\)/g, '(?:\/(.*?))?');
@@ -24,7 +24,6 @@ module.exports = (function() {
 
 
   function RateLimitMiddleware(options) {
-
     this._hits = {};
     this._options = {
       timeWindow: 60 * 1000,
@@ -43,8 +42,7 @@ module.exports = (function() {
     }
 
     // Convert the route prefixes to regular expressions
-    this._options.enforce = this._options.enforce.map( re => parseRegexFromString(re) );
-    console.log(this._options)
+    this._options.enforce = this._options.enforce.map(re => parseRegexFromString(re));
 
     this._resetLimiter();
   }
@@ -65,14 +63,14 @@ module.exports = (function() {
   };
 
   RateLimitMiddleware.prototype.exec = function exec(controller, callback) {
-    const route = controller.request().url
+    const route = controller.request().url;
     let excluded = false;
 
     this._options.enforce.forEach(re => {
       if (!re.exec(route)) {
         excluded = true;
       }
-    })
+    });
 
     if (!excluded) {
       const ip = controller.request().headers['x-forwarded-for'] ||
