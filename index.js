@@ -1,30 +1,29 @@
 'use strict';
+const client = require('client.js');
 
-module.exports = (function() {
+// Borrowed from Nodal (core/required/utilities.js)
+function parseRegexFromString(str) {
 
-  // Borrowed from Nodal (core/required/utilities.js)
-  function parseRegexFromString(str) {
-
-    if (str[str.length - 1] === '/') {
-      str = str.substr(0, str.length - 1);
-    }
-
-    str = str.replace(/(?:(?:\/:(\w+?)\/)|(\*))/g, (m, name, aster) => {
-      return m === '*' ? '(.*?)' : '/([^\/]+?)/';
-    });
-
-    str = str.replace(/\/:(\w+?)$/, (m, name) => {
-      return '(?:/([^\/]+?))?';
-    });
-
-    str = str.replace(/\/\(\.\*\?\)/g, '(?:\/(.*?))?');
-
-    return new RegExp(`^${str}/?$`);
+  if (str[str.length - 1] === '/') {
+    str = str.substr(0, str.length - 1);
   }
 
+  str = str.replace(/(?:(?:\/:(\w+?)\/)|(\*))/g, (m, name, aster) => {
+    return m === '*' ? '(.*?)' : '/([^\/]+?)/';
+  });
 
-  function RateLimitMiddleware(options) {
-    this._hits = {};
+  str = str.replace(/\/:(\w+?)$/, (m, name) => {
+    return '(?:/([^\/]+?))?';
+  });
+
+  str = str.replace(/\/\(\.\*\?\)/g, '(?:\/(.*?))?');
+
+  return new RegExp(`^${str}/?$`);
+}
+
+
+class RateLimitMiddleware {
+  constructor (options) {
     this._options = {
       timeWindow: 60 * 1000,
       max: 100,
@@ -47,22 +46,21 @@ module.exports = (function() {
     this._resetLimiter();
   }
 
-  RateLimitMiddleware.prototype.setOptions = function setOptions(options) {
+  setOptions(options) {
     if (undefined !== options) {
       this._options = Object.assign({}, this._options, options);
       this._resetLimiter();
     }
-  };
+  }
 
-  RateLimitMiddleware.prototype._resetLimiter = function _resetLimiter() {
+  _resetLimiter() {
     // use a simple date to track window expiration vs using say setInterval()
     // Idea borrowed from https://github.com/ovx/strict-rate-limiter
     this._reset = new Date();
     this._reset.setMilliseconds(this._reset.getMilliseconds() + this._options.timeWindow);
-    this._hits = {};
   };
 
-  RateLimitMiddleware.prototype.exec = function exec(controller, callback) {
+  async exec(controller, callback) {
     const route = controller.request().url;
     let excluded = false;
 
@@ -74,28 +72,32 @@ module.exports = (function() {
 
     if (!excluded) {
       const ip = controller.request().headers['x-forwarded-for'] ||
-                 controller.request().connection.remoteAddress;
+        controller.request().connection.remoteAddress;
 
       // has it been more than this._options.timeWindow?
       if (this._reset < new Date()) {
         this._resetLimiter();
       }
 
+      let curHits = await client.mgetAsync(ip).catch(err => console.log(err));
+
       if (this._options.exclude.indexOf(ip) !== -1) {
-        this._hits[ip] = 1;
-      } else if (this._hits[ip]) {
-        this._hits[ip]++;
+        client.set(ip, 1);
+      } else if (curHits) {
+        client.incr(ip);
       } else {
-        this._hits[ip] = 1;
+        client.set(ip, 1, 'EX', 10 * 60 * 60);
       }
 
-      const reqLeft = Math.max(0, this._options.max - this._hits[ip]);
+      curHits = await client.mgetAsync(ip).catch(err => console.log(err));
 
-      if (this._options.max && this._hits[ip] > this._options.max) {
+      const reqLeft = Math.max(0, this._options.max - curHits);
+
+      if (this._options.max && curHits > this._options.max) {
         controller.tooManyRequests(this._options.message, {
           host: ip,
           maximum: this._options.max,
-          requests: this._hits[ip],
+          requests: curHits,
           resets: this._reset,
         });
       }
@@ -107,7 +109,7 @@ module.exports = (function() {
       }
     }
     callback(null);
-  };
+  }
+}
 
-  return RateLimitMiddleware;
-})();
+module.exports = RateLimitMiddleware;

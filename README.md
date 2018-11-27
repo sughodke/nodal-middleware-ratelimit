@@ -1,9 +1,6 @@
 #  Nodal Rate Limit Middleware
 
-This is a middleware package for [Nodal](http://www.nodaljs.com) that performs basic rate-limiting on public endpoints. This is meant to be a functional example how how to write middleware for nodal and package as an npm module. Thus this is intentionally a very rudimentary and simplistic piece of middleware and my wish it others will build more advanced rate limiters.
-
-# DO NOT USE THIS YET
-This module, while totally functional, has hardcoded options. Until PR [#149](https://github.com/keithwhor/nodal/pull/149) on the main Nodal repo is merged. The module currently allows **100 connections per minute per ip**. Localhost (::1 in Nodal) is also intentionally not excluded to allow for testing.
+This is a middleware package for [Nodal](http://www.nodaljs.com) that performs basic rate-limiting on public endpoints using Redis as the memory store.
 
 ## Install
 
@@ -19,13 +16,18 @@ In your `app/app.js` you first need to require the module
 const RateLimitMiddleware = require('nodal-middleware-ratelimit');
 ```
 
-Then simply use it
+Then set your environment variables
+```
+REDIS_URL="redis.company.com" REDIS_PASSWORD="SecurePassword" node app.js
+```
+
+And simply use it
 
 ```javascript
 this.middleware.use(RateLimitMiddleware)
 ```
 
-Whola your aapp is now being rate limited!.
+Et Violà, your app is now being rate limited!
 
 ## Configuring
 

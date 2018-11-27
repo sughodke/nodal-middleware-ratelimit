@@ -21,5 +21,8 @@
   "devDependencies": {
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^4.0.0"
+  },
+  "dependencies": {
+    "redis": "^2.8.0"
   }
 }
